@@ -1,24 +1,47 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useBooksQuery, useCreateBookMutation, useDeleteBookMutation, useUpdateBookMutation, } from "./graphql/generated";
+import { useState } from "react";
 
 function App() {
+  const { data: { books = [] } = {} } = useBooksQuery();
+  // mutation完了後に実行したいqueryを指定することができます。なぜbooksクエリを指定しているかというと、追加した書籍のデータを画面に表示させるためです。
+  const [createBook] = useCreateBookMutation({ refetchQueries: ["books"] });
+  const [title, setTitle] = useState("");
+
+  const [deleteBook] = useDeleteBookMutation({ refetchQueries: ["books"] });
+
+  const [updateBook] = useUpdateBookMutation();
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div style={{ width: "400px", margin: " 40px auto" }}>
+     <h1>書籍一覧</h1>
+     <div style={{ display: "flex", gap: "10px", marginBottom: "40px" }}></div>
+    <div>
+      <input value={title} onChange={(e) => setTitle(e.target.value)} />
+     <button
+       onClick={() => {
+         createBook({ variables: { params: { title: title } } });
+         setTitle("");
+       }}
+     >
+       保存
+     </button>
+     </div>
+      {books.map((book) => (
+        <div key={book.id} style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+          <input
+           value={book.title || ""}
+           onChange={(e) =>
+             updateBook({
+               variables: { id: book.id, params: { title: e.target.value } },
+             })
+           }
+         />
+        <div>{book.title}</div>
+        <button onClick={() => deleteBook({ variables: { id: book.id } })}>
+          削除
+        </button>
+      </div>
+      ))}
     </div>
   );
 }
