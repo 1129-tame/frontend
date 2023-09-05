@@ -39,10 +39,10 @@ jobs:
           gh pr create -B $TARGET_BRANCH -t "[backport] ${{ github.head_ref }} to $TARGET_BRANCH" -b "# Description
           backport of #${{ github.event.number }} to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
-          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url)" >> "$GITHUB_ENV"
+          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
-          pull-request-number: $target_pr_url |  grep -oP '/pull/\K\d+'
+          pull-request-number: "$target_pr_url"
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
@@ -75,10 +75,10 @@ jobs:
           gh pr create -B $TARGET_BRANCH -t "[backport] ${{ github.head_ref }} to $TARGET_BRANCH" -b "# Description
           backport of #${{ github.event.number }} to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
-          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url)" >> "$GITHUB_ENV"
+          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
-          pull-request-number: $target_pr_url | grep -oP '/pull/\K\d+'
+          pull-request-number: "$target_pr_url"
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
@@ -106,10 +106,10 @@ jobs:
           gh pr create -B $TARGET_BRANCH -t "[backport] ${{ github.head_ref }} to $TARGET_BRANCH" -b "# Description
           backport of #${{ github.event.number }} to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
-          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url)" >> "$GITHUB_ENV"
+          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
-          pull-request-number: $target_pr_url |  grep -oP '/pull/\K\d+'
+          pull-request-number: "$target_pr_url"
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
@@ -141,10 +141,10 @@ jobs:
           gh pr create -B $TARGET_BRANCH -t "[backport] ${{ github.head_ref }} to $TARGET_BRANCH" -b "# Description
           backport of #${{ github.event.number }} to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
-          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url)" >> "$GITHUB_ENV"
+          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
-          pull-request-number: $target_pr_url |  grep -oP '/pull/\K\d+'
+          pull-request-number: "$target_pr_url"
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
