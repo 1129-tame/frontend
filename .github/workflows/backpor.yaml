@@ -22,13 +22,13 @@ jobs:
       TARGET_BRANCH: staging
     # Don't run on closed unmerged pull requests
     if: |
-      github.event_name == 'pull_request'
-      && github.event.pull_request.merged == true
+      github.event.pull_request.merged == true
       && github.event.action == 'closed'
     steps:
       - uses: actions/checkout@v3
       - name: Create backport PR
         run: |
+          echo "event_name ${{ github.event_name }}"
           # github actions 内で backport 用のローカルリポジトリを作成
           git checkout -b "${{ github.head_ref }}-backport-$TARGET_BRANCH"
           # リモートブランチに push
