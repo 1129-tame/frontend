@@ -1,11 +1,17 @@
 name: Backport merge pull request production to staging
 on:
-  push:
+  pull_request_target:
+    types:
+      - closed
     branches:
       - production # base branch
+  push:
+    branches:
+      - production 
+  
 permissions:
   contents: write # so it can comment
-  pull-requests: write # so it can create pull requests hogehoge
+  pull-requests: write # so it can create pull requests
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 jobs:
@@ -15,28 +21,26 @@ jobs:
     env:
       TARGET_BRANCH: staging
     # Don't run on closed unmerged pull requests
-    # if: |
-    #   github.event.pull_request.merged == true
-    #   && github.event.action == 'closed'
+    if: |
+      github.event_name == 'pull_request'
+      && github.event.pull_request.merged == true
+      && github.event.action == 'closed'
     steps:
       - uses: actions/checkout@v3
       - name: Create backport PR
         run: |
-          # GitHub CLIでプルリクエストのヘッドブランチを取得
-          # branch_name=production
-          # echo "PR branch name: $branch_name"
           # github actions 内で backport 用のローカルリポジトリを作成
-          git checkout -b "backport/$branch_name-backport-$TARGET_BRANCH"
+          git checkout -b "${{ github.head_ref }}-backport-$TARGET_BRANCH"
           # リモートブランチに push
-          git push -u origin "backport/$branch_name-backport-$TARGET_BRANCH"
+          git push -u origin "${{ github.head_ref }}-backport-$TARGET_BRANCH"
           # PR 作成、 head は現在 checkout している backport ブランチになる
-          gh pr create -B $TARGET_BRANCH -t "[backport] backport/$branch_name to $TARGET_BRANCH" -b "# Description
+          gh pr create -B $TARGET_BRANCH -t "[backport] ${{ github.head_ref }} to $TARGET_BRANCH" -b "# Description
           backport of #${{ github.event.number }} to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
-          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/$branch_name-backport-$TARGET_BRANCH" --jq ".[] | .url" --json url)" >> "$GITHUB_ENV"
+          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "${{ github.head_ref }}-backport-$TARGET_BRANCH" --jq ".[] | .url" --json url)" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
-          pull-request-number: "$target_pr_url"
+          pull-request-number: ${{ github.event.number }}
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
@@ -48,30 +52,27 @@ jobs:
     env:
       TARGET_BRANCH: lab
     # Don't run on closed unmerged pull requests
-    # if: |
-    #   github.event.pull_request.merged == true
-    #   && github.event.action == 'closed'
+    if: |
+      github.event.pull_request.merged == true
+      && github.event.action == 'closed'
     steps:
       - uses: actions/checkout@v3
       - name: Create backport PR
         run: |
           git fetch
           git checkout staging
-          # GitHub CLIでプルリクエストのヘッドブランチを取得
-          branch_name=$(gh pr view ${{ github.event.number }} --json headRefName -q '.headRefName')
-          echo "PR branch name: $branch_name"
           # github actions 内で backport 用のローカルリポジトリを作成
-          git checkout -b "backport/$branch_name-backport-$TARGET_BRANCH"
+          git checkout -b "${{ github.head_ref }}-backport-$TARGET_BRANCH"
           # リモートブランチに push
-          git push -u origin "backport/$branch_name-backport-$TARGET_BRANCH"
+          git push -u origin "${{ github.head_ref }}-backport-$TARGET_BRANCH"
           # PR 作成、 head は現在 checkout している backport ブランチになる
-          gh pr create -B $TARGET_BRANCH -t "[backport] backport/$branch_name to $TARGET_BRANCH" -b "# Description
+          gh pr create -B $TARGET_BRANCH -t "[backport] ${{ github.head_ref }} to $TARGET_BRANCH" -b "# Description
           backport of #${{ github.event.number }} to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
-          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/$branch_name-backport-$TARGET_BRANCH" --jq ".[] | .url" --json url)" >> "$GITHUB_ENV"
+          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "${{ github.head_ref }}-backport-$TARGET_BRANCH" --jq ".[] | .url" --json url)" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
-          pull-request-number: "$target_pr_url"
+          pull-request-number: ${{ github.event.number }}
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
