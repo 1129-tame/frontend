@@ -82,7 +82,7 @@ jobs:
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
-          gh pr merge --merge "$target_pr_url"
+          gh pr merge --merge "$target_pr_url --auto"
   backport_to_staging_on_push:
     name: Backport pull request to staging
     runs-on: ubuntu-latest
@@ -113,7 +113,7 @@ jobs:
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
-          gh pr merge --merge "$target_pr_url"
+          gh pr merge --merge "$target_pr_url --auto"
   backport_to_lab_on_push:
     name: Backport pull request to lab
     runs-on: ubuntu-latest
@@ -148,4 +148,4 @@ jobs:
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
-          gh pr merge --merge "$target_pr_url"
+          gh pr merge --merge "$target_pr_url --auto"
