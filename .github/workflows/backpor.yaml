@@ -42,7 +42,7 @@ jobs:
           echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url)" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
-          pull-request-number: ${{ github.event.number }}
+          pull-request-number: ${{ github.event.number }} |  grep -oP '/pull/\K\d+'
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
@@ -78,7 +78,7 @@ jobs:
           echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url)" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
-          pull-request-number: ${{ github.event.number }}
+          pull-request-number: ${{ github.event.number }} | grep -oP '/pull/\K\d+'
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
@@ -109,7 +109,7 @@ jobs:
           echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url)" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
-          pull-request-number: ${{ github.event.number }}
+          pull-request-number: ${{ github.event.number }} |  grep -oP '/pull/\K\d+'
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
@@ -144,7 +144,7 @@ jobs:
           echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url)" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
-          pull-request-number: ${{ github.event.number }}
+          pull-request-number: ${{ github.event.number }} |  grep -oP '/pull/\K\d+'
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
