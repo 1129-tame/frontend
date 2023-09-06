@@ -22,14 +22,15 @@ jobs:
       - name: Check Push User Jenkins
         run: |
           PUSHED_USER="${{ github.actor }}"
-          echo PUSHED_USER
           ALLOWED_USER="jenkins" # 許可したいGitHubユーザー名
 
           if [ "$PUSHED_USER" == "$ALLOWED_USER" ]; then
             echo "Pushed by allowed user. Proceed with the workflow."
           else
             echo "Pushed by a different user. Skipping the workflow."
-            exit 1
+            
+
+            skip-checks:true
           fi
       - uses: actions/checkout@v3
       - name: Create backport PR
