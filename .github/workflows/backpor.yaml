@@ -28,15 +28,16 @@ jobs:
         run: |
           echo "Github.event_name is ${{ github.event_name }}"
           # github actions 内で backport 用のローカルリポジトリを作成
-          git checkout -b "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH"
+          echo CURRENT_BRANCH="backport/$(echo ${{ github.head_ref }} | tr / -)-to-merge-$TARGET_BRANCH"
+          git checkout -b "$CURRENT_BRANCH"
           # リモートブランチに push
-          git push -u origin "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH"
+          git push -u origin "$CURRENT_BRANCH"
           # PR 作成、 head は現在 checkout している backport ブランチになる
           gh pr create -B $TARGET_BRANCH -t "[backport] ${{ github.head_ref }} to $TARGET_BRANCH" -b "# Description
           backport of #${{ github.event.number }} to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
           # branch を元に URL を取得しそれを正規表現で number のみ抽出している
-          echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
+          echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "$CURRENT_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
           # URL ではなく number が必要
@@ -66,15 +67,16 @@ jobs:
           git checkout staging
           echo "Github.event_name is ${{ github.event_name }}"
           # github actions 内で backport 用のローカルリポジトリを作成
-          git checkout -b "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH"
+          echo CURRENT_BRANCH="backport/$(echo ${{ github.head_ref }} | tr / -)-to-merge-$TARGET_BRANCH"
+          git checkout -b "$CURRENT_BRANCH"
           # リモートブランチに push
-          git push -u origin "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH"
+          git push -u origin "$CURRENT_BRANCH"
           # PR 作成、 head は現在 checkout している backport ブランチになる
           gh pr create -B $TARGET_BRANCH -t "[backport] ${{ github.head_ref }} to $TARGET_BRANCH" -b "# Description
           backport of #${{ github.event.number }} to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
           # branch を元に URL を取得しそれを正規表現で number のみ抽出している
-          echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
+          echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "$CURRENT_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
           # URL ではなく number が必要
