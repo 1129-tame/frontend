@@ -1,4 +1,4 @@
-name: Backport merge pull request production to staging
+name: Backport merge pull request on push
 on:
   push:
     branches:
@@ -15,7 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TARGET_BRANCH: staging
-    # Don't run on closed unmerged pull requests
+    # Don't run on merged pull requests
+    # jenkins が _autogen によって直push を行っているため user が jenkins のみに制御
     if: |
       github.event_name == 'push'
       && github.actor == 'jenkins'
@@ -24,7 +25,6 @@ jobs:
       - name: Create backport PR
         run: |
           echo "Github.event_name is ${{ github.event_name }}"
-          echo "Github.event.pull_request is ${{ github.event.pull_request }}"
           # github actions 内で backport 用のローカルリポジトリを作成
           git checkout -b "backport/jenkins-to-merge-$TARGET_BRANCH"
           # リモートブランチに push
@@ -32,26 +32,27 @@ jobs:
           # PR 作成、 head は現在 checkout している backport ブランチになる
           gh pr create -B $TARGET_BRANCH -t "[backport] jenkins to $TARGET_BRANCH" -b "# Description
           backport of #${{ github.event.number }} to $TARGET_BRANCH"
-          # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
-          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/jenkins-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
+          # 後続のステップで利用するため作成した PR の number を取得し環境変数に入れる
+          # branch を元に URL を取得しそれを正規表現で number のみ抽出している
+          echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "backport/jenkins-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
-          pull-request-number: ${{ env.target_pr_url }}
+          # URL ではなく number が必要
+          pull-request-number: ${{ env.target_pr_number }}
           github-token: ${{ secrets.MY_ACCESS_TOKEN }}
       - name: Merge backport PR
-        if: env.target_pr_url != null
+        if: env.target_pr_number != null
         run: |
-          gh pr merge --merge "$target_pr_url"
+          gh pr merge --merge "$target_pr_number" --auto
   backport_to_lab_on_push:
     name: Backport pull request to lab on push
     runs-on: ubuntu-latest
     needs: backport_to_staging_on_push
     env:
       TARGET_BRANCH: lab
-    # Don't run on closed unmerged pull requests
+    # Don't run on merged pull requests
     if: |
       github.event_name == 'push'
-      && !github.event.pull_request
     steps:
       - uses: actions/checkout@v3
       - name: Create backport PR
@@ -69,12 +70,14 @@ jobs:
           gh pr create -B $TARGET_BRANCH -t "[backport] jenkins to $TARGET_BRANCH" -b "# Description
           backport of #${{ github.event.number }} to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
-          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/jenkins-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
+          # branch を元に URL を取得しそれを正規表現で number のみ抽出している
+          echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "backport/jenkins-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
-          pull-request-number: ${{ env.target_pr_url }}
+          # URL ではなく number が必要
+          pull-request-number: ${{ env.target_pr_number }}
           github-token: ${{ secrets.MY_ACCESS_TOKEN }}
       - name: Merge backport PR
-        if: env.target_pr_url != null
+        if: env.target_pr_number != null
         run: |
-          gh pr merge --merge "$target_pr_url"
+          gh pr merge --merge "$target_pr_number" --auto
