@@ -43,6 +43,7 @@ jobs:
       - uses: hmarr/auto-approve-action@v3
         with:
           pull-request-number: ${{ env.target_pr_url }}
+          github-token: ${{ secrets.MY_ACCESS_TOKEN }}
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
@@ -79,6 +80,7 @@ jobs:
       - uses: hmarr/auto-approve-action@v3
         with:
           pull-request-number: ${{ env.target_pr_url }}
+          github-token: ${{ secrets.MY_ACCESS_TOKEN }}
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
@@ -110,6 +112,7 @@ jobs:
       - uses: hmarr/auto-approve-action@v3
         with:
           pull-request-number: ${{ env.target_pr_url }}
+          github-token: ${{ secrets.MY_ACCESS_TOKEN }}
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
@@ -145,6 +148,7 @@ jobs:
       - uses: hmarr/auto-approve-action@v3
         with:
           pull-request-number: ${{ env.target_pr_url }}
+          github-token: ${{ secrets.MY_ACCESS_TOKEN }}
       - name: Merge backport PR
         if: env.target_pr_url != null
         run: |
