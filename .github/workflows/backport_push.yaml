@@ -18,19 +18,8 @@ jobs:
     # Don't run on closed unmerged pull requests
     if: |
       github.event_name == 'push'
+      && github.actor == 'jenkins'
     steps:
-      - name: Check Push User Jenkins
-        run: |
-          PUSHED_USER="${{ github.actor }}"
-          echo PUSHED_USER
-          ALLOWED_USER="jenkins" # 許可したいGitHubユーザー名
-
-          if [ "$PUSHED_USER" == "$ALLOWED_USER" ]; then
-            echo "Pushed by allowed user. Proceed with the workflow."
-          else
-            echo "Pushed by a different user. Skipping the workflow."
-            exit 1
-          fi
       - uses: actions/checkout@v3
       - name: Create backport PR
         run: |
