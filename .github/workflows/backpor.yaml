@@ -1,4 +1,4 @@
-name: Backport merge pull request production to staging
+name: Backport merge pull request 
 on:
   pull_request_target:
     types:
@@ -27,7 +27,6 @@ jobs:
       - name: Create backport PR
         run: |
           echo "Github.event_name is ${{ github.event_name }}"
-          echo "Github.event.pull_request is ${{ github.event.pull_request }}"
           # github actions 内で backport 用のローカルリポジトリを作成
           git checkout -b "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH"
           # リモートブランチに push
@@ -36,15 +35,17 @@ jobs:
           gh pr create -B $TARGET_BRANCH -t "[backport] ${{ github.head_ref }} to $TARGET_BRANCH" -b "# Description
           backport of #${{ github.event.number }} to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
-          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
+          # branch を元に URL を取得しそれを正規表現で number のみ抽出している
+          echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
-          pull-request-number: ${{ env.target_pr_url }}
+          # URL ではなく number が必要
+          pull-request-number: ${{ env.target_pr_number }}
           github-token: ${{ secrets.MY_ACCESS_TOKEN }}
       - name: Merge backport PR
-        if: env.target_pr_url != null
+        if: env.target_pr_number != null
         run: |
-          gh pr merge --merge "$target_pr_url"
+          gh pr merge --merge "$target_pr_number" --auto
   backport_to_lab_on_pull_request_target:
     name: Backport pull request to lab
     runs-on: ubuntu-latest
@@ -64,7 +65,6 @@ jobs:
           git fetch
           git checkout staging
           echo "Github.event_name is ${{ github.event_name }}"
-          echo "Github.event.pull_request is ${{ github.event.pull_request }}"
           # github actions 内で backport 用のローカルリポジトリを作成
           git checkout -b "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH"
           # リモートブランチに push
@@ -73,12 +73,14 @@ jobs:
           gh pr create -B $TARGET_BRANCH -t "[backport] ${{ github.head_ref }} to $TARGET_BRANCH" -b "# Description
           backport of #${{ github.event.number }} to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
-          echo "target_pr_url=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
+          # branch を元に URL を取得しそれを正規表現で number のみ抽出している
+          echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
-          pull-request-number: ${{ env.target_pr_url }}
+          # URL ではなく number が必要
+          pull-request-number: ${{ env.target_pr_number }}
           github-token: ${{ secrets.MY_ACCESS_TOKEN }}
       - name: Merge backport PR
-        if: env.target_pr_url != null
+        if: env.target_pr_number != null
         run: |
-          gh pr merge --merge "$target_pr_url"
+          gh pr merge --merge "$target_pr_number" --auto
