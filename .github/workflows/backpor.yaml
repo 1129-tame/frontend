@@ -36,7 +36,7 @@ jobs:
           backport of #${{ github.event.number }} to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
           # branch を元に URL を取得しそれを正規表現で number のみ抽出している
-          echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "backport/jenkins-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
+          echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
           # URL ではなく number が必要
@@ -74,7 +74,7 @@ jobs:
           backport of #${{ github.event.number }} to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
           # branch を元に URL を取得しそれを正規表現で number のみ抽出している
-          echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "backport/jenkins-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
+          echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "backport/${{ github.head_ref }}-to-merge-$TARGET_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
           # URL ではなく number が必要
