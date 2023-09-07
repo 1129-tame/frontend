@@ -29,6 +29,7 @@ jobs:
       - name: Create backport PR
         run: |
           echo "github ref is ${{ github.ref }}"
+          echo "github ref is ${{ github.head_ref }}"
           echo "Github.event_name is ${{ github.event_name }}"
           # github actions 内で backport 用のローカルリポジトリを作成
           # lint error が起こらない形式に整形
@@ -99,6 +100,7 @@ jobs:
       - name: Create backport PR
         run: |
           echo "github ref is ${{ github.ref }}"
+          echo "github ref is ${{ github.head_ref }}"
           echo "Github.event_name is ${{ github.event_name }}"
           # github actions 内で backport 用のローカルリポジトリを作成
           CURRENT_BRANCH="backport/${{ github.actor }}-push-to-$TARGET_BRANCH"
