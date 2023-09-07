@@ -1,6 +1,8 @@
 name: Backport merge
 on:
   push:
+    branches:
+      - production
   pull_request_target:
     types:
       - closed
