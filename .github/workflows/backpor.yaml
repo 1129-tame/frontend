@@ -1,5 +1,6 @@
-name: Backport merge pull request
+name: Backport merge
 on:
+  push:
   pull_request_target:
     types:
       - closed
@@ -13,7 +14,7 @@ env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 jobs:
   backport_to_staging_on_pull_request_target:
-    name: Backport pull request to staging
+    name: Backport PR to staging on pull request target
     runs-on: ubuntu-latest
     env:
       TARGET_BRANCH: staging
@@ -48,7 +49,7 @@ jobs:
         run: |
           gh pr merge --merge "$target_pr_number" --auto
   backport_to_lab_on_pull_request_target:
-    name: Backport pull request to lab
+    name: Backport PR to lab on pull request target
     runs-on: ubuntu-latest
     needs: backport_to_staging_on_pull_request_target
     env:
@@ -83,12 +84,11 @@ jobs:
         run: |
           gh pr merge --merge "$target_pr_number" --auto
   backport_to_staging_on_push:
-    name: Backport pull request to staging on push
+    name: Backport PR to staging on push
     runs-on: ubuntu-latest
     env:
       TARGET_BRANCH: staging
     # Don't run on merged pull requests
-    # jenkins が _autogen によって直push を行っているため user が jenkins のみに制御
     if: |
       github.event_name == 'push'
     steps:
@@ -97,7 +97,7 @@ jobs:
         run: |
           echo "Github.event_name is ${{ github.event_name }}"
           # github actions 内で backport 用のローカルリポジトリを作成
-          CURRENT_BRANCH="backport/0-jenkins-to-merge-$TARGET_BRANCH"
+          CURRENT_BRANCH="backport/${{ github.actor }}-push-to-$TARGET_BRANCH"
           git checkout -b "$CURRENT_BRANCH"
           # リモートブランチに push
           git push -u origin "$CURRENT_BRANCH"
@@ -131,9 +131,8 @@ jobs:
           git fetch
           git checkout staging
           echo "Github.event_name is ${{ github.event_name }}"
-          echo "Github.event.pull_request is ${{ github.event.pull_request }}"
           # github actions 内で backport 用のローカルリポジトリを作成
-          CURRENT_BRANCH="backport/0-jenkins-to-merge-$TARGET_BRANCH"
+          CURRENT_BRANCH="backport/${{ github.actor }}-push-to-$TARGET_BRANCH"
           git checkout -b "$CURRENT_BRANCH"
           # リモートブランチに push
           git push -u origin "$CURRENT_BRANCH"
