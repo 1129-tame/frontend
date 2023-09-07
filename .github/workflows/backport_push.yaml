@@ -40,7 +40,7 @@ jobs:
         with:
           # URL ではなく number が必要
           pull-request-number: ${{ env.target_pr_number }}
-          github-token: ${{ secrets.GITHUB_ACCESS_TOKEN_FOR_BACKPORT }}
+          github-token: ${{ secrets.MY_ACCESS_TOKEN }}
       - name: Merge backport PR
         if: env.target_pr_number != null
         run: |
@@ -76,7 +76,7 @@ jobs:
         with:
           # URL ではなく number が必要
           pull-request-number: ${{ env.target_pr_number }}
-          github-token: ${{ secrets.GITHUB_ACCESS_TOKEN_FOR_BACKPORT }}
+          github-token: ${{ secrets.MY_ACCESS_TOKEN }}
       - name: Merge backport PR
         if: env.target_pr_number != null
         run: |
