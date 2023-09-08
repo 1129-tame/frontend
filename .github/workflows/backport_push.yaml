@@ -24,16 +24,17 @@ jobs:
           echo "Github.event_name is ${{ github.event_name }}"
 
           # 共通の変数を取得
-          repo=${{ github.repository }}
-          commit_sha=${{ github.event.after }}
+          REPO=${{ github.repository }}
+          COMMIT_SHA=${{ github.event.after }}
           # push された commit が merge commit の場合 PR のdata が取得できる
-          MERGED_PR_JSON=$(gh pr list --state merged --json number,headRefName,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "$commit_sha")')
+          MERGED_PR_JSON=$(gh pr list --state merged --json number,headRefName,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "$COMMIT_SHA")')
           
+          echo "$MERGED_PR_JSON"
           # merge commit か 直 push かによって変数の中身を変える
           if [ -z $MERGED_PR_JSON ]; then
             # PR がない場合は直接 commit が push されたとき 
             REFNAME="direct-push"
-            REFURL="https://github.com/$repo/commit/$commit_sha"
+            REFURL="https://github.com/$REPO/commit/$COMMIT_SHA"
             echo "Pushed commit URL is $REFURL"
           else
             # PR がある場合 json を整形して変数に代入
@@ -88,16 +89,16 @@ jobs:
           echo "Github.event_name is ${{ github.event_name }}"
 
           # 共通の変数を取得
-          repo=${{ github.repository }}
-          commit_sha=${{ github.event.after }}
+          REPO=${{ github.repository }}
+          COMMIT_SHA=${{ github.event.after }}
           # push された commit が merge commit の場合 PR のdata が取得できる
-          MERGED_PR_JSON=$(gh pr list --state merged --json number,headRefName,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "$commit_sha")')
+          MERGED_PR_JSON=$(gh pr list --state merged --json number,headRefName,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "$COMMIT_SHA")')
           
           # merge commit か 直 push かによって変数の中身を変える
           if [ -z $MERGED_PR_JSON ]; then
             # PR がない場合は直接 commit が push されたとき 
             REFNAME="direct-push"
-            REFURL="https://github.com/$repo/commit/$commit_sha"
+            REFURL="https://github.com/$REPO/commit/$COMMIT_SHA"
             echo "Pushed commit URL is $REFURL"
           else
             # PR がある場合 json を整形して変数に代入
