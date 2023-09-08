@@ -43,7 +43,7 @@ jobs:
           fi
 
           # 後続ステップで使用する変数を環境変数に定義する
-          echo "RefName=$REFNAME" >> "$GITHUB_ENV"
+          echo "REFNAME=$REFNAME" >> "$GITHUB_ENV"
           echo "REFURL=$REFURL" >> "$GITHUB_ENV"
       - name: Create backport PR
         run: |
