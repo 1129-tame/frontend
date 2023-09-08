@@ -17,9 +17,6 @@ jobs:
     env:
       TARGET_BRANCH: staging
     # Don't run on merged pull requests
-    # jenkins が _autogen によって直push を行っているため user が jenkins のみに制御
-    # if: |
-    #   github.actor == 'jenkins'
     steps:
       - uses: actions/checkout@v3
       - name: Create backport PR
