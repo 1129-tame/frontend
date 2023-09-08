@@ -26,7 +26,8 @@ jobs:
           # push された commit が merge commit の場合 PR のdata が取得できる
           MERGED_PR_JSON=$(gh pr list --state merged --json number,headRefName,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
           
-          echo "$MERGED_PR_JSON"
+          echo "MERGED_PR_JSON is $MERGED_PR_JSON"
+
           # merge commit か 直 push かによって変数の中身を変える
           if [ -z $MERGED_PR_JSON ]; then
             # PR がない場合は直接 commit が push されたとき 
@@ -88,6 +89,8 @@ jobs:
 
           # push された commit が merge commit の場合 PR のdata が取得できる
           MERGED_PR_JSON=$(gh pr list --state merged --json number,headRefName,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
+          
+          echo "MERGED_PR_JSON is $MERGED_PR_JSON"
           
           # merge commit か 直 push かによって変数の中身を変える
           if [ -z $MERGED_PR_JSON ]; then
