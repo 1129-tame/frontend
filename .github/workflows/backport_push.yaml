@@ -29,7 +29,7 @@ jobs:
           echo "Github commit sha is ${{ github.event.after }}"
           echo "Github commit sha is ${{ github.sha }}"
           # github actions 内で backport 用のローカルリポジトリを作成
-          echo "merged_pr_json=$(gh pr list --state merged --json number,headRefName,baseRefName,mergedAt,author,mergeCommit --jq '.[] | select(.mergeCommit | .oid == \"${{ github.push.after }}\")')" >> "$GITHUB_ENV"
+          echo "merged_pr_json=$(gh pr list --state merged --json number,headRefName,baseRefName,mergedAt,author,mergeCommit --jq '.[] | select(.mergeCommit | .oid == \"${{ github.event.after }}\")')" >> "$GITHUB_ENV"
           echo "push commit is PR $merged_pr_json.number by $merged_pr_json.author"
           CURRENT_BRANCH="backport/${{ env.merged_pr_json.headRefName }}-to-merge-$TARGET_BRANCH"
           git checkout -b "$CURRENT_BRANCH"
