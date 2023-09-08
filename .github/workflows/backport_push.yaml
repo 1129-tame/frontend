@@ -49,7 +49,7 @@ jobs:
         run: |
           # merged_pr_json=$(gh pr list --state merged --json number,headRefName,author,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
 
-          echo "push commit is $RefURL by ${{ github.event.pusher }}"
+          echo "push commit is $RefURL by ${{ github.event.pusher.name }}"
           # lint が通る形に整形
           CURRENT_BRANCH="backport/$(echo $RefName | tr / -)-to-merge-$TARGET_BRANCH"
           # github actions 内で backport 用のローカルリポジトリを作成
@@ -111,8 +111,12 @@ jobs:
           # merge されたブランチの production 内にいるので staging に checkout
           git fetch
           git checkout staging
-          # github actions 内で backport 用のローカルリポジトリを作成
+
+          echo "push commit is $RefURL by ${{ github.event.pusher.name }}"
+
+          lint が通る形に整形
           CURRENT_BRANCH="backport/$(echo $RefName | tr / -)-to-merge-$TARGET_BRANCH"
+          # github actions 内で backport 用のローカルリポジトリを作成
           git checkout -b "$CURRENT_BRANCH"
           # リモートブランチに push
           git push -u origin "$CURRENT_BRANCH"
