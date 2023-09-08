@@ -17,9 +17,6 @@ jobs:
     env:
       TARGET_BRANCH: staging
     # Don't run on merged pull requests
-    # jenkins が _autogen によって直push を行っているため user が jenkins のみに制御
-    # if: |
-    #   github.actor == 'jenkins'
     steps:
       - uses: actions/checkout@v3
       - name: Create backport PR
@@ -29,7 +26,7 @@ jobs:
           echo "Github commit sha is ${{ github.event.after }}"
           echo "Github commit sha is ${{ github.sha }}"
           # github actions 内で backport 用のローカルリポジトリを作成
-          merged_pr_json=$(gh pr list --state merged --json number,headRefName,baseRefName,mergedAt,author,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
+          merged_pr_json=$(gh pr list --state merged --json number,headRefName,author,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
           echo "merged_pr_json=$merged_pr_json" >> "$GITHUB_ENV"
           echo "merged commit data is $merged_pr_json"
           echo "push commit is PR #$(echo $merged_pr_json | jq '.number') by $(echo $merged_pr_json | jq '.author')"
