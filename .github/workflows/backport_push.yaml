@@ -26,7 +26,8 @@ jobs:
           # push された commit が merge commit の場合 PR のdata が取得できる
           MERGED_PR_JSON=$(gh pr list --state merged --json number,headRefName,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
           
-          echo "$MERGED_PR_JSON"
+          echo "MERGED_PR_JSON is $MERGED_PR_JSON"
+
           # merge commit か 直 push かによって変数の中身を変える
           if [ -z $MERGED_PR_JSON ]; then
             # PR がない場合は直接 commit が push されたとき 
@@ -42,7 +43,7 @@ jobs:
           fi
 
           # 後続ステップで使用する変数を環境変数に定義する
-          echo "RefName=$REFNAME" >> "$GITHUB_ENV"
+          echo "REFNAME=$REFNAME" >> "$GITHUB_ENV"
           echo "REFURL=$REFURL" >> "$GITHUB_ENV"
       - name: Create backport PR
         run: |
@@ -79,7 +80,7 @@ jobs:
     needs: backport_to_staging_on_push
     env:
       TARGET_BRANCH: lab
-    # Don't run on merged pull requests
+    # Don't run on merged pull requests h
     steps:
       - uses: actions/checkout@v3
       - name: Set variables
@@ -88,6 +89,8 @@ jobs:
 
           # push された commit が merge commit の場合 PR のdata が取得できる
           MERGED_PR_JSON=$(gh pr list --state merged --json number,headRefName,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
+          
+          echo "MERGED_PR_JSON is $MERGED_PR_JSON"
           
           # merge commit か 直 push かによって変数の中身を変える
           if [ -z $MERGED_PR_JSON ]; then
