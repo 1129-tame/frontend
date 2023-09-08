@@ -26,15 +26,17 @@ jobs:
           # commit SHA を取得
           # github actions 内で backport 用のローカルリポジトリを作成
           merged_pr_json=$(gh pr list --state merged --json number,headRefName,author,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
-          if [ -z "$merged_pr_json" ]; then
+          if [ -z $merged_pr_json ]; then
             RefName="direct-push"
             owner=${{ github.repository_owner }}
             repo=${{ github.repository }}
             commit_sha=${{ github.event.after }}
             RefURL="https://github.com/$owner/$repo/commit/$commit_sha"
+            echo "$RefURL"
           else
             RefName=$(echo $merged_pr_json | jq -r '.headRefName')
-            RefURL="#$(echo $merged_pr_json | jq '.number')""
+            RefURL="#$(echo $merged_pr_json | jq '.number')"
+            echo "$RefURL"
           fi
           echo "merged commit data is $merged_pr_json"
           echo "push commit is PR #$(echo $merged_pr_json | jq '.number') by $(echo $merged_pr_json | jq -c '.author')"
