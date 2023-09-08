@@ -64,16 +64,16 @@ jobs:
 
           # 後続のステップで利用するため作成した PR の number を取得し環境変数に入れる
           # branch を元に URL を取得しそれを正規表現で number のみ抽出している
-          echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "$CURRENT_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
+          echo "TARGET_PR_NUMBER=$(gh pr list -B $TARGET_BRANCH -H "$CURRENT_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
           # URL ではなく number が必要
-          pull-request-number: ${{ env.target_pr_number }}
+          pull-request-number: ${{ env.TARGET_PR_NUMBER }}
           github-token: ${{ secrets.MY_ACCESS_TOKEN }}
       - name: Merge backport PR
-        if: env.target_pr_number != null
+        if: env.TARGET_PR_NUMBER != null
         run: |
-          gh pr merge --merge "$target_pr_number"
+          gh pr merge --merge "$TARGET_PR_NUMBER"
   backport_to_lab_on_push:
     name: Backport pull request to lab on push
     runs-on: ubuntu-latest
@@ -132,13 +132,13 @@ jobs:
           
           # 後続のステップで利用するため作成した PR の number を取得し環境変数に入れる
           # branch を元に URL を取得しそれを正規表現で number のみ抽出している
-          echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "$CURRENT_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
+          echo "TARGET_PR_NUMBER=$(gh pr list -B $TARGET_BRANCH -H "$CURRENT_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
       - uses: hmarr/auto-approve-action@v3
         with:
           # URL ではなく number が必要
-          pull-request-number: ${{ env.target_pr_number }}
+          pull-request-number: ${{ env.TARGET_PR_NUMBER }}
           github-token: ${{ secrets.MY_ACCESS_TOKEN }}
       - name: Merge backport PR
-        if: env.target_pr_number != null
+        if: env.TARGET_PR_NUMBER != null
         run: |
-          gh pr merge --merge "$target_pr_number"
+          gh pr merge --merge "$TARGET_PR_NUMBER"
