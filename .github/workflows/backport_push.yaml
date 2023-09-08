@@ -19,28 +19,40 @@ jobs:
     # Don't run on merged pull requests
     steps:
       - uses: actions/checkout@v3
-      - name: Create backport PR
+      - name: Set variables
         run: |
           echo "Github.event_name is ${{ github.event_name }}"
-          echo "Github commit sha is ${{ github.event.after }}"
-          # commit SHA を取得
-          # github actions 内で backport 用のローカルリポジトリを作成
-          merged_pr_json=$(gh pr list --state merged --json number,headRefName,author,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
+
+          # 共通の変数を取得
+          repo=${{ github.repository }}
+          commit_sha=${{ github.event.after }}
+          # push された commit が merge commit の場合 PR のdata が取得できる
+          merged_pr_json=$(gh pr list --state merged --json number,headRefName,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "$commit_sha")')
+          
+          # merge commit か 直 push かによって変数の中身を変える
           if [ -z $merged_pr_json ]; then
+            # PR がない場合は直接 commit が push されたとき 
             RefName="direct-push"
-            owner=${{ github.repository_owner }}
-            repo=${{ github.repository }}
-            commit_sha=${{ github.event.after }}
-            RefURL="https://github.com/$owner/$repo/commit/$commit_sha"
-            echo "$RefURL"
+            RefURL="https://github.com/$repo/commit/$commit_sha"
+            echo "Pushed commit URL is $RefURL"
           else
+            # PR がある場合 json を整形して変数に代入
             RefName=$(echo $merged_pr_json | jq -r '.headRefName')
             RefURL="#$(echo $merged_pr_json | jq '.number')"
-            echo "$RefURL"
+            echo "Merged PR URL is $RefURL"
           fi
-          echo "merged commit data is $merged_pr_json"
-          echo "push commit is PR #$(echo $merged_pr_json | jq '.number') by $(echo $merged_pr_json | jq -c '.author')"
+
+          # 後続ステップで使用する変数を環境変数に定義する
+          echo "RefName=$RefName" >> "$GITHUB_ENV"
+          echo "RefURL=$RefURL" >> "$GITHUB_ENV"
+      - name: Create backport PR
+        run: |
+          # merged_pr_json=$(gh pr list --state merged --json number,headRefName,author,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
+
+          echo "push commit is $RefURL by ${{ github.event.pusher.name }}"
+          # lint が通る形に整形
           CURRENT_BRANCH="backport/$(echo $RefName | tr / -)-to-merge-$TARGET_BRANCH"
+          # github actions 内で backport 用のローカルリポジトリを作成
           git checkout -b "$CURRENT_BRANCH"
           # リモートブランチに push
           git push -u origin "$CURRENT_BRANCH"
@@ -68,22 +80,49 @@ jobs:
     # Don't run on merged pull requests
     steps:
       - uses: actions/checkout@v3
+      - name: Set variables
+        run: |
+          echo "Github.event_name is ${{ github.event_name }}"
+
+          # 共通の変数を取得
+          repo=${{ github.repository }}
+          commit_sha=${{ github.event.after }}
+          # push された commit が merge commit の場合 PR のdata が取得できる
+          merged_pr_json=$(gh pr list --state merged --json number,headRefName,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "$commit_sha")')
+          
+          # merge commit か 直 push かによって変数の中身を変える
+          if [ -z $merged_pr_json ]; then
+            # PR がない場合は直接 commit が push されたとき 
+            RefName="direct-push"
+            RefURL="https://github.com/$repo/commit/$commit_sha"
+            echo "Pushed commit URL is $RefURL"
+          else
+            # PR がある場合 json を整形して変数に代入
+            RefName=$(echo $merged_pr_json | jq -r '.headRefName')
+            RefURL="#$(echo $merged_pr_json | jq '.number')"
+            echo "Merged PR URL is $RefURL"
+          fi
+
+          # 後続ステップで使用する変数を環境変数に定義する
+          echo "RefName=$RefName" >> "$GITHUB_ENV"
+          echo "RefURL=$RefURL" >> "$GITHUB_ENV"
       - name: Create backport PR
         run: |
           # merge されたブランチの production 内にいるので staging に checkout
           git fetch
           git checkout staging
-          echo "Github.event_name is ${{ github.event_name }}"
-          merged_pr_json=$(gh pr list --state merged --json number,headRefName,author,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
-          echo "merge commit data is $merged_pr_json"
+
+          echo "push commit is $RefURL by ${{ github.event.pusher.name }}"
+
+          lint が通る形に整形
+          CURRENT_BRANCH="backport/$(echo $RefName | tr / -)-to-merge-$TARGET_BRANCH"
           # github actions 内で backport 用のローカルリポジトリを作成
-          CURRENT_BRANCH="backport/$(echo $merged_pr_json | jq -r '.headRefName' | tr / -)-to-merge-$TARGET_BRANCH"
           git checkout -b "$CURRENT_BRANCH"
           # リモートブランチに push
           git push -u origin "$CURRENT_BRANCH"
           # PR 作成、 head は現在 checkout している backport ブランチになる
-          gh pr create -B $TARGET_BRANCH -t "[backport] $(echo $merged_pr_json | jq -r '.headRefName') to $TARGET_BRANCH" -b "# Description
-          backport of #$(echo $merged_pr_json | jq '.number') to $TARGET_BRANCH"
+          gh pr create -B $TARGET_BRANCH -t "[backport] $RefName to $TARGET_BRANCH" -b "# Description
+          backport of $RefURL to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
           # branch を元に URL を取得しそれを正規表現で number のみ抽出している
           echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "$CURRENT_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
