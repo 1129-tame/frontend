@@ -29,9 +29,9 @@ jobs:
           echo "Github commit sha is ${{ github.event.after }}"
           echo "Github commit sha is ${{ github.sha }}"
           # github actions 内で backport 用のローカルリポジトリを作成
-          echo "merged_pr_json=$(gh pr list --state merged --json number,headRefName,baseRefName,mergedAt,author,mergeCommit --jq '.[] | select(.mergeCommit | .oid == ${{ github.event.after }})')" >> "$GITHUB_ENV"
-          echo "merged commit data is ${{ env.merged_pr_json }}"
-          echo "push commit is PR $(echo ${{ env.merged_pr_json }} | jq '.number') by $(echo ${{ env.merged_pr_json }} | jq '.author')"
+          echo "merged_pr_json=$(gh pr list --state merged --json number,headRefName,baseRefName,mergedAt,author,mergeCommit --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')" >> "$GITHUB_ENV"
+          echo "merged commit data is $merged_pr_json"
+          echo "push commit is PR #$(echo $merged_pr_json | jq '.number') by $(echo $merged_pr_json | jq '.author')"
           CURRENT_BRANCH="backport/$(echo ${{ env.merged_pr_json }} | jq '.headRefName')-to-merge-$TARGET_BRANCH"
           git checkout -b "$CURRENT_BRANCH"
           # リモートブランチに push
