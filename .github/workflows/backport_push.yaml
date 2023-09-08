@@ -80,7 +80,7 @@ jobs:
     needs: backport_to_staging_on_push
     env:
       TARGET_BRANCH: lab
-    # Don't run on merged pull requests
+    # Don't run on merged pull requests h
     steps:
       - uses: actions/checkout@v3
       - name: Set variables
