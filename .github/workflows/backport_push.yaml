@@ -16,21 +16,17 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TARGET_BRANCH: staging
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
     # Don't run on merged pull requests
     steps:
       - uses: actions/checkout@v3
       - name: Create backport PR
-        id: set-matrix
         run: |
           echo "Github.event_name is ${{ github.event_name }}"
           # commit SHA を取得
           echo "Github commit sha is ${{ github.event.after }}"
           echo "Github commit sha is ${{ github.sha }}"
           # github actions 内で backport 用のローカルリポジトリを作成
-          merged_pr_json=$(gh pr list --state merged --json number,headRefName,author,mergeCommit  --jq -c '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
-          echo "matrix=$merged_pr_json" >> "$GITHUB_OUTPUT"
+          merged_pr_json=$(gh pr list --state merged --json number,headRefName,author,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
           echo "merged commit data is $merged_pr_json"
           echo "push commit is PR #$(echo $merged_pr_json | jq '.number') by $(echo $merged_pr_json | jq '.author')"
           CURRENT_BRANCH="backport/$(echo $merged_pr_json | jq -r '.headRefName' | tr / -)-to-merge-$TARGET_BRANCH"
@@ -58,8 +54,6 @@ jobs:
     needs: backport_to_staging_on_push
     env:
       TARGET_BRANCH: lab
-    strategy:
-      matrix: ${{ fromJSON(needs.job1.outputs.matrix) }}
     # Don't run on merged pull requests
     steps:
       - uses: actions/checkout@v3
@@ -69,15 +63,16 @@ jobs:
           git fetch
           git checkout staging
           echo "Github.event_name is ${{ github.event_name }}"
-          echo "matrix is ${{ matrix }}"
+          merged_pr_json=$(gh pr list --state merged --json number,headRefName,author,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
+          echo "merge commit data is $merged_pr_json"
           # github actions 内で backport 用のローカルリポジトリを作成
-          CURRENT_BRANCH="backport/$(echo ${{ matrix }} | jq -r '.headRefName' | tr / -)-to-merge-$TARGET_BRANCH"
+          CURRENT_BRANCH="backport/$(echo $merged_pr_json | jq -r '.headRefName' | tr / -)-to-merge-$TARGET_BRANCH"
           git checkout -b "$CURRENT_BRANCH"
           # リモートブランチに push
           git push -u origin "$CURRENT_BRANCH"
           # PR 作成、 head は現在 checkout している backport ブランチになる
-          gh pr create -B $TARGET_BRANCH -t "[backport] $(echo ${{ matrix }} | jq -r '.headRefName') to $TARGET_BRANCH" -b "# Description
-          backport of #$(echo ${{ matrix }} | jq '.number') to $TARGET_BRANCH"
+          gh pr create -B $TARGET_BRANCH -t "[backport] $(echo $merged_pr_json | jq -r '.headRefName') to $TARGET_BRANCH" -b "# Description
+          backport of #$(echo $merged_pr_json | jq '.number') to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
           # branch を元に URL を取得しそれを正規表現で number のみ抽出している
           echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "$CURRENT_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
