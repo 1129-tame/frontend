@@ -30,14 +30,15 @@ jobs:
           echo "Github commit sha is ${{ github.sha }}"
           # github actions 内で backport 用のローカルリポジトリを作成
           echo "merged_pr_json=$(gh pr list --state merged --json number,headRefName,baseRefName,mergedAt,author,mergeCommit --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')" >> "$GITHUB_ENV"
-          echo "push commit is PR $merged_pr_json.number by $merged_pr_json.author"
-          CURRENT_BRANCH="backport/${{ env.merged_pr_json.headRefName }}-to-merge-$TARGET_BRANCH"
+          echo "merged commit data is $merged_pr_json"
+          echo "push commit is PR $(echo ${{ env.merged_pr_json }} | jq '.number') by $(echo ${{ env.merged_pr_json }} | jq '.author')"
+          CURRENT_BRANCH="backport/$(echo ${{ env.merged_pr_json }} | jq '.headRefName')-to-merge-$TARGET_BRANCH"
           git checkout -b "$CURRENT_BRANCH"
           # リモートブランチに push
           git push -u origin "$CURRENT_BRANCH"
           # PR 作成、 head は現在 checkout している backport ブランチになる
           gh pr create -B $TARGET_BRANCH -t "[backport] jenkins to $TARGET_BRANCH" -b "# Description
-          backport of #${{ env.merged_pr_json.number }} to $TARGET_BRANCH"
+          backport of #$(echo ${{ env.merged_pr_json }} | jq '.number') to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の number を取得し環境変数に入れる
           # branch を元に URL を取得しそれを正規表現で number のみ抽出している
           echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "$CURRENT_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
@@ -67,13 +68,13 @@ jobs:
           echo "Github.event_name is ${{ github.event_name }}"
           echo "Github.event.pull_request is ${{ github.event.pull_request }}"
           # github actions 内で backport 用のローカルリポジトリを作成
-          CURRENT_BRANCH="backport/${{ env.merged_pr_json.headRefName }}-to-merge-$TARGET_BRANCH"
+          CURRENT_BRANCH="backport/$(echo ${{ env.merged_pr_json }} | jq '.headRefName')-to-merge-$TARGET_BRANCH"
           git checkout -b "$CURRENT_BRANCH"
           # リモートブランチに push
           git push -u origin "$CURRENT_BRANCH"
           # PR 作成、 head は現在 checkout している backport ブランチになる
           gh pr create -B $TARGET_BRANCH -t "[backport] jenkins to $TARGET_BRANCH" -b "# Description
-          backport of #${{ env.merged_pr_json.number }} to $TARGET_BRANCH"
+          backport of #$(echo ${{ env.merged_pr_json }} | jq '.number') to $TARGET_BRANCH"
           # 後続のステップで利用するため作成した PR の URL を取得し環境変数に入れる
           # branch を元に URL を取得しそれを正規表現で number のみ抽出している
           echo "target_pr_number=$(gh pr list -B $TARGET_BRANCH -H "$CURRENT_BRANCH" --jq ".[] | .url" --json url | grep -oP '/pull/\K\d+')" >> "$GITHUB_ENV"
