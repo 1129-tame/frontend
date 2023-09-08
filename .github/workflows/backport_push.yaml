@@ -28,7 +28,7 @@ jobs:
           # github actions 内で backport 用のローカルリポジトリを作成
           merged_pr_json=$(gh pr list --state merged --json number,headRefName,author,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "${{ github.event.after }}")')
           echo "merged commit data is $merged_pr_json"
-          echo "push commit is PR #$(echo $merged_pr_json | jq '.number') by $(echo $merged_pr_json | jq '.author')"
+          echo "push commit is PR #$(echo $merged_pr_json | jq '.number') by $(echo $merged_pr_json | jq -c '.author')"
           CURRENT_BRANCH="backport/$(echo $merged_pr_json | jq -r '.headRefName' | tr / -)-to-merge-$TARGET_BRANCH"
           git checkout -b "$CURRENT_BRANCH"
           # リモートブランチに push
