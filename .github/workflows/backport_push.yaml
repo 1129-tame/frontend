@@ -25,7 +25,7 @@ jobs:
 
           # 共通の変数を取得
           REPO=${{ github.repository }}
-          COMMIT_SHA=${{ github.event.after }}
+          COMMIT_SHA="${{ github.event.after }}"
           # push された commit が merge commit の場合 PR のdata が取得できる
           MERGED_PR_JSON=$(gh pr list --state merged --json number,headRefName,mergeCommit  --jq '.[] | select(.mergeCommit | .oid == "$COMMIT_SHA")')
           
